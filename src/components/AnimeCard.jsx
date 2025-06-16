@@ -6,7 +6,7 @@ const AnimeCard = ({ anime, onAdd, onRemove, isInWishlist }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <div className="img relative mb-6 md:mb-0 group">
+    <div className="relative mb-6 w-full sm:w-[260px] group">
       <Link to={`/anime/${createSlug(anime.title)}`}>
         <div
           className="relative"
@@ -16,16 +16,16 @@ const AnimeCard = ({ anime, onAdd, onRemove, isInWishlist }) => {
           <img
             src={anime.imageUrl}
             alt={anime.title}
-            className="h-100.1 w-[260px] rounded-md max-sm:h-52 max-sm:w-36"
+            className="h-[24rem] w-full rounded-md object-cover max-sm:h-52"
           />
           {isHovered && (
-            <div className="absolute bottom-0 left-1/2 h-100.1 w-[260px] transform -translate-x-1/2 bg-black/30 backdrop-blur-lg text-white p-4 rounded-lg shadow-xl z-20 max-sm:hidden max-md:hidden max-lg:hidden transition-all duration-300 ease-out opacity-0 group-hover:opacity-100">
-              <h3 className="text-lg  mb-2">{anime.title}</h3>
+            <div className="absolute bottom-0 left-1/2 w-full sm:w-[260px] h-full transform -translate-x-1/2 bg-black/30 backdrop-blur-lg text-white p-4 rounded-lg shadow-xl z-20 hidden sm:block transition-all duration-300 ease-out opacity-0 group-hover:opacity-100">
+              <h3 className="text-lg mb-2">{anime.title}</h3>
               <p className="text-sm mb-2 line-clamp-3">
                 {anime.description || "No description available"}
               </p>
               <div className="flex justify-between text-sm">
-                <div className="flex flex-col ">
+                <div className="flex flex-col">
                   <span>Season: {anime.season || "1"}</span>
                   <span>Episodes: {anime.totalEpisodes || "Unknown"}</span>
                   <span>Duration: {(anime.animeduration || "24") + "m"}</span>
@@ -48,9 +48,8 @@ const AnimeCard = ({ anime, onAdd, onRemove, isInWishlist }) => {
             </div>
           )}
         </div>
-        <div className="title ">
-          <h2 className="text-white mt-2 -ml-[2.7rem] text-lg w-full text-center max-sm:text-base max-sm:mt-1 max-sm:-ml-0">
-            {/* Show full title up to 18 chars on desktop, 15 on mobile */}
+        <div className="title text-center">
+          <h2 className="text-white mt-2 text-lg max-sm:text-base">
             <span className="hidden sm:inline">
               {anime.title.length > 18
                 ? `${anime.title.slice(0, 18)}...`
@@ -64,7 +63,7 @@ const AnimeCard = ({ anime, onAdd, onRemove, isInWishlist }) => {
           </h2>
         </div>
       </Link>
-      <div className="flex justify-between mt-2">
+      <div className="mt-2">
         {isInWishlist ? (
           <button
             onClick={() => onRemove(anime.id)}

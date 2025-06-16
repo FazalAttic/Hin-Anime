@@ -33,3 +33,28 @@ body {
 .no-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
+
+/* Anime-themed scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f0f1a; /* Dark blue background */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #ff1493; /* Pink like many anime accents */
+  border-radius: 5px;
+  border: 2px solid #0f0f1a;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #ff69b4; /* Lighter pink on hover */
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #ff1493 #0f0f1a;
+}

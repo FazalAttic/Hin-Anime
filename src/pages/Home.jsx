@@ -160,7 +160,10 @@ const Home = () => {
           transition={{ delay: 0.2 }}
           className="main-glass bg-gray-900 border-whitegood backdrop-blur shadow-lg h-auto w-113 px-4  rounded-xl"
         >
-          <div className="mt-12 center-img">
+          <h1 className="text-3xl font-bold text-white text-center mb-8 -mt-4 max-sm:-mt-8">
+            Discover New Anime
+          </h1>
+          <div className="center-img">
             <motion.div
               variants={containerVariants}
               initial="hidden"

@@ -1,5 +1,5 @@
 // src/components/TopRatedAnime.jsx
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createSlug } from "../context/utils";
@@ -7,6 +7,10 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const TopRatedAnime = ({ animeData }) => {
   const scrollRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
   // Filter and sort anime by IMDb rating (descending) and take top 10
   const topRatedAnime = [...animeData]
     .sort((a, b) => b.imdbRating - a.imdbRating)
@@ -18,6 +22,25 @@ const TopRatedAnime = ({ animeData }) => {
       const scrollAmount = direction === "left" ? -300 : 300;
       current.scrollBy({ left: scrollAmount, behavior: "smooth" });
     }
+  };
+
+  // Touch event handlers for mobile
+  const handleTouchStart = (e) => {
+    setIsDragging(true);
+    setStartX(e.touches[0].pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const x = e.touches[0].pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 2; // Adjust multiplier for faster/slower scrolling
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
   };
 
   return (
@@ -34,7 +57,10 @@ const TopRatedAnime = ({ animeData }) => {
 
         <div
           ref={scrollRef}
-          className="overflow-x-hidden whitespace-nowrap py-2"
+          className="overflow-x-auto whitespace-nowrap py-2 no-scrollbar"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           <div className="inline-flex space-x-6 px-2">
             {topRatedAnime.map((anime, index) => (
@@ -46,7 +72,7 @@ const TopRatedAnime = ({ animeData }) => {
               >
                 <Link to={`/anime/${createSlug(anime.title)}`}>
                   <div className="relative group">
-                    <div className="absolute -top-3 -left-3 bg-yellow-400 text-gray-900 font-bold rounded-full w-8 h-8 flex items-center justify-center text-sm z-10">
+                    <div className="absolute top-0 left-0 bg-gray-800 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center text-sm z-10">
                       {index + 1}
                     </div>
                     <img
@@ -54,7 +80,7 @@ const TopRatedAnime = ({ animeData }) => {
                       alt={anime.title}
                       className="w-full h-64 max-sm:h-52 object-cover rounded-lg shadow-lg group-hover:shadow-xl transition-shadow duration-300"
                     />
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-3 rounded-b-lg">
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-3 rounded-b-lg backdrop-blur-sm">
                       <h3 className="text-white font-semibold text-sm line-clamp-1">
                         {anime.title}
                       </h3>

@@ -119,7 +119,7 @@ const AnimeSlider = () => {
         {/* Pause/play button */}
         <button
           onClick={() => setAutoPlay(!autoPlay)}
-          className="absolute top-4 right-4 z-20 bg-gray-800 bg-opacity-70 text-white p-2 rounded-full hover:bg-purple-600 transition-all w-12 h-12 flex items-center justify-center"
+          className="max-sm:hidden absolute top-4 right-4 z-20 bg-gray-800 bg-opacity-70 text-white p-2 rounded-full hover:bg-purple-600 transition-all w-12 h-12 flex items-center justify-center"
           aria-label={autoPlay ? "Pause slider" : "Play slider"}
         >
           {autoPlay ? "⏸" : "▶"}
@@ -194,18 +194,16 @@ const AnimeSlider = () => {
         {/* Navigation arrows - made larger and more visible */}
         <button
           onClick={handlePrev}
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-gray-800 bg-opacity-70 text-white rounded-full hover:bg-purple-600 transition-all w-12 h-12 flex items-center justify-center"
+          className="max-sm:hidden absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-gray-800 bg-opacity-70 text-white rounded-full hover:bg-purple-600 transition-all w-12 h-12 flex items-center justify-center"
           aria-label="Previous slide"
         >
           <FiChevronLeft size={28} />
         </button>
         <button
           onClick={handleNext}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-gray-800 bg-opacity-70 text-white rounded-full hover:bg-purple-600 transition-all w-12 h-12 flex items-center justify-center"
+          className="max-sm:hidden absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-gray-800 bg-opacity-70 text-white rounded-full hover:bg-purple-600 transition-all w-12 h-12 flex items-center justify-center"
           aria-label="Next slide"
-        >
-          <FiChevronRight size={28} />
-        </button>
+        ></button>
 
         {/* Dots indicator - made slightly larger */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex space-x-2">

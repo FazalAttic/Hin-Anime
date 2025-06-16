@@ -80,7 +80,11 @@ const Navbars = () => {
         </button>
 
         {/* Centered Title */}
-        <h1 className="text-white text-xl font-bold select-none">Hin-Anime</h1>
+        <Link to="/">
+          <h1 className="text-white text-xl font-bold select-none">
+            Hin-Anime
+          </h1>
+        </Link>
 
         {/* Mobile search icon */}
         <button
@@ -156,17 +160,6 @@ const Navbars = () => {
             )}
 
             <li>
-              <Link
-                to="/about"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-gray-800 hover:text-blue-400 transition-colors duration-200"
-              >
-                <FaInfoCircle className="text-xl" />
-                <span className="font-medium">ABOUT</span>
-              </Link>
-            </li>
-
-            <li>
               <a
                 href="https://discord.gg/2JBnqk2kne"
                 target="_blank"
@@ -176,6 +169,17 @@ const Navbars = () => {
                 <FaDiscord className="text-xl" />
                 <span className="font-medium">DISCORD</span>
               </a>
+            </li>
+
+            <li>
+              <Link
+                to="/about"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-gray-800 hover:text-blue-400 transition-colors duration-200"
+              >
+                <FaInfoCircle className="text-xl" />
+                <span className="font-medium">ABOUT</span>
+              </Link>
             </li>
 
             {/* Authenticated User */}

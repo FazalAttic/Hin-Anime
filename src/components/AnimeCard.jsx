@@ -19,7 +19,7 @@ const AnimeCard = ({ anime, onAdd, onRemove, isInWishlist }) => {
             className="h-[24rem] w-full rounded-md object-cover max-sm:h-52"
           />
           {isHovered && (
-            <div className="absolute bottom-0 left-1/2 w-full sm:w-[260px] h-full transform -translate-x-1/2 bg-black/30 backdrop-blur-lg text-white p-4 rounded-lg shadow-xl z-20 hidden sm:block transition-all duration-300 ease-out opacity-0 group-hover:opacity-100">
+            <div className="absolute bottom-0 left-1/2 w-full sm:w-[260px] h-full transform -translate-x-1/2 bg-black/55 backdrop-blur-lg text-white p-4 rounded-lg shadow-xl z-20 hidden sm:block transition-all duration-300 ease-out opacity-0 group-hover:opacity-100">
               <h3 className="text-lg mb-2">{anime.title}</h3>
               <p className="text-sm mb-2 line-clamp-3">
                 {anime.description || "No description available"}

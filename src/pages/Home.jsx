@@ -14,6 +14,8 @@ import AnimeCard from "../components/AnimeCard.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 
 import AnimeSlider from "../components/AnimeSlider.jsx";
+import TopRatedAnime from "../components/TopRatedAnime.jsx";
+
 const Home = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -144,6 +146,7 @@ const Home = () => {
   return (
     <>
       <AnimeSlider />
+      <TopRatedAnime animeData={animeData} />
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

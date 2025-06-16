@@ -106,15 +106,17 @@ const Wishlist = () => {
             </p>
           </div>
         ) : (
-          <div className="grid gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {filteredAnime.map((anime) => (
-              <AnimeCard
-                key={anime.id}
-                anime={anime}
-                onRemove={handleRemoveFromWishlist}
-                isInWishlist={true}
-              />
-            ))}
+          <div className="flex justify-center">
+            <div className="grid max-sm:gap-3 gap-12 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 ">
+              {filteredAnime.map((anime) => (
+                <AnimeCard
+                  key={anime.id}
+                  anime={anime}
+                  onRemove={handleRemoveFromWishlist}
+                  isInWishlist={true}
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>

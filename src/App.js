@@ -1,3 +1,4 @@
+// App.js
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import Wishlist from "./components/Wishlist.jsx";
@@ -9,7 +10,10 @@ import Navbar from "./components/Navbar.jsx";
 import Profile from "./pages/Profile.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import AnimePage from "./components/AnimePage.jsx";
+import GenrePage from "./pages/GenrePage.jsx"; // Add this import
 import ScrollToTop from "./components/ScrollToTop";
+import About from "./pages/About.jsx"; // Add if you have an About page
+import NotFound from "./pages/NotFound.jsx"; // Recommended for 404 pages
 
 import "./index.css";
 
@@ -20,13 +24,16 @@ export default function App() {
       <Navbar />
 
       <Routes>
-        <Route path="/anime/:titleSlug" element={<AnimePage />} />
         <Route path="/" element={<Home />} />
+        <Route path="/anime/:titleSlug" element={<AnimePage />} />
+        <Route path="/genre/:genre" element={<GenrePage />} />{" "}
+        {/* Add this route */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        {/* Add other routes here */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        {/* Private Route for Wishlist */}
+        <Route path="/about" element={<About />} />{" "}
+        {/* Add if you have About */}
+        {/* Private Routes */}
         <Route
           path="/wishlist"
           element={
@@ -43,6 +50,8 @@ export default function App() {
             </PrivateRoute>
           }
         />
+        {/* 404 Page */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );

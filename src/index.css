@@ -58,3 +58,33 @@ body {
   scrollbar-width: thin;
   scrollbar-color: #ff1493 #0f0f1a;
 }
+
+/* Add these styles to your index.css */
+.genre-filter-dropdown {
+  max-height: 60vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #4b5563 #1f2937;
+}
+
+.genre-filter-dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.genre-filter-dropdown::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+.genre-filter-dropdown::-webkit-scrollbar-thumb {
+  background-color: #4b5563;
+  border-radius: 4px;
+}
+
+.genre-item {
+  transition: all 0.2s ease;
+}
+
+.genre-item:hover {
+  background-color: #374151;
+  transform: translateX(2px);
+}

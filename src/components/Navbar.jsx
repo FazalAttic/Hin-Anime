@@ -10,19 +10,28 @@ import {
   FaSignInAlt,
   FaUserPlus,
   FaSignOutAlt,
-  FaSearch, // <-- Add this
+  FaSearch,
+  FaFilter,
+  FaTimes,
 } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext.jsx";
 import AnimeSearchBar from "./AnimeSearchBar.jsx";
 import { db } from "../firebase.jsx";
 import { doc, onSnapshot } from "firebase/firestore";
+import { animeData } from "../data.jsx";
 
-const Navbars = () => {
+const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showMobileSearch, setShowMobileSearch] = useState(false); // <-- Add this
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [showGenreFilter, setShowGenreFilter] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState({});
+
+  // Extract all unique genres from anime data
+  const allGenres = [
+    ...new Set(animeData.flatMap((anime) => anime.genres || [])),
+  ].sort();
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -37,7 +46,10 @@ const Navbars = () => {
   }, [user]);
 
   useEffect(() => {
-    if (isOpen) setShowMobileSearch(false);
+    if (isOpen) {
+      setShowMobileSearch(false);
+      setShowGenreFilter(false);
+    }
   }, [isOpen]);
 
   const displayName = profile.username || user?.email?.split("@")[0] || "User";
@@ -59,41 +71,107 @@ const Navbars = () => {
     setIsOpen(!isOpen);
   };
 
+  const closeAllOverlays = () => {
+    setIsOpen(false);
+    setShowMobileSearch(false);
+    setShowGenreFilter(false);
+  };
+
   return (
     <>
       {/* Top search bar (desktop only) */}
       <div className="fixed top-0 left-0 right-0 backdrop-blur-lg bg-gray-900 bg-opacity-80 border-b border-gray-700 shadow-xl z-30 mb-60 hidden md:block">
-        <div className="container mx-auto px-4 py-2">
+        <div className="container mx-auto px-4 py-2 flex items-center gap-4">
           <AnimeSearchBar />
+
+          {/* Desktop Genre Filter */}
+          <div className="relative">
+            <button
+              onClick={() => setShowGenreFilter(!showGenreFilter)}
+              className="flex items-center gap-2 text-white bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg transition-colors"
+            >
+              <FaFilter />
+              <span>Genres</span>
+            </button>
+
+            {showGenreFilter && (
+              <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg z-50 p-2 genre-filter-dropdown">
+                <div className="flex justify-between items-center mb-2 px-2">
+                  <span className="text-white font-medium">
+                    Filter by Genre
+                  </span>
+                  <button
+                    onClick={() => setShowGenreFilter(false)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+                <div className="space-y-1">
+                  {allGenres.map((genre) => (
+                    <Link
+                      key={genre}
+                      to={`/genre/${genre.toLowerCase()}`}
+                      onClick={() => {
+                        setShowGenreFilter(false);
+                        closeAllOverlays();
+                      }}
+                      className="block px-3 py-2 text-white hover:bg-gray-700 rounded transition-colors genre-item"
+                    >
+                      {genre}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Mobile top bar with blur and icons */}
-      <div className="fixed top-0 left-0 right-0 z-40 md:hidden backdrop-blur-lg bg-gray-900 bg-opacity-80 border-b border-gray-700 shadow-xl flex items-center justify-between px-4 h-14">
-        {/* Mobile Menu Button */}
-        <button
-          onClick={toggleNavbar}
-          className="text-white bg-gray-900 bg-opacity-70 p-2 rounded-full hover:bg-opacity-90 transition-all"
-          aria-label="Toggle menu"
-        >
-          <FaBars size={24} />
-        </button>
+      {/* Mobile top bar */}
+      <div className="fixed top-0 left-0 right-0 z-40 md:hidden backdrop-blur-lg bg-gray-900 bg-opacity-80 border-b border-gray-700 shadow-xl flex items-center justify-between px-4 h-14 ">
+        {/* Left icons */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleNavbar}
+            className="text-white bg-gray-900 bg-opacity-70 p-2 rounded-full hover:bg-opacity-90 transition-all"
+            aria-label="Toggle menu"
+          >
+            <FaBars size={24} />
+          </button>
+          {/* Add more left icons here if needed */}
+        </div>
 
         {/* Centered Title */}
         <Link to="/">
-          <h1 className="text-white text-xl font-bold select-none">
+          <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-xl font-bold select-none pointer-events-none">
             Hin-Anime
           </h1>
         </Link>
-
-        {/* Mobile search icon */}
-        <button
-          onClick={() => setShowMobileSearch(true)}
-          className="text-white bg-gray-900 bg-opacity-70 p-2 rounded-full hover:bg-opacity-90 transition-all"
-          aria-label="Open search"
-        >
-          <FaSearch size={22} />
-        </button>
+        {/* Right icons */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              setShowGenreFilter(true);
+              setShowMobileSearch(false);
+            }}
+            className="text-white bg-gray-900 bg-opacity-70 p-2 rounded-full hover:bg-opacity-90 transition-all"
+            aria-label="Open genre filter"
+          >
+            <FaFilter size={20} />
+          </button>
+          <button
+            onClick={() => {
+              setShowMobileSearch(true);
+              setShowGenreFilter(false);
+            }}
+            className="text-white bg-gray-900 bg-opacity-70 p-2 rounded-full hover:bg-opacity-90 transition-all"
+            aria-label="Open search"
+          >
+            <FaSearch size={22} />
+          </button>
+          {/* Add more right icons here if needed */}
+        </div>
       </div>
 
       {/* Mobile search overlay */}
@@ -109,10 +187,45 @@ const Navbars = () => {
                 className="text-white text-2xl px-2"
                 aria-label="Close search"
               >
-                &times;
+                <FaTimes />
               </button>
             </div>
             <AnimeSearchBar onResultClick={() => setShowMobileSearch(false)} />
+          </div>
+        </div>
+      )}
+
+      {/* Mobile genre filter overlay */}
+      {showGenreFilter && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black bg-opacity-80 md:hidden">
+          <div className="w-full max-w-md mt-16 px-4">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-white text-lg font-semibold">
+                Filter by Genre
+              </span>
+              <button
+                onClick={() => setShowGenreFilter(false)}
+                className="text-white text-2xl px-2"
+                aria-label="Close genre filter"
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {allGenres.map((genre) => (
+                <Link
+                  key={genre}
+                  to={`/genre/${genre.toLowerCase()}`}
+                  onClick={() => {
+                    setShowGenreFilter(false);
+                    closeAllOverlays();
+                  }}
+                  className="block px-4 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors text-center"
+                >
+                  {genre}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -124,7 +237,7 @@ const Navbars = () => {
         } md:translate-x-0 md:w-48`}
       >
         <div className="mt-4 ml-4 md:ml-6">
-          <Link to="/" onClick={() => setIsOpen(false)}>
+          <Link to="/" onClick={closeAllOverlays}>
             <img
               src="https://i.postimg.cc/XvdWdLrm/hinanime-logo-removebg-preview.png"
               className="h-16 w-auto relative z-20 hover:opacity-90 transition-opacity"
@@ -138,7 +251,7 @@ const Navbars = () => {
             <li>
               <Link
                 to="/"
-                onClick={() => setIsOpen(false)}
+                onClick={closeAllOverlays}
                 className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-gray-800 hover:text-blue-400 transition-colors duration-200"
               >
                 <FaHome className="text-xl" />
@@ -150,7 +263,7 @@ const Navbars = () => {
               <li>
                 <Link
                   to="/wishlist"
-                  onClick={() => setIsOpen(false)}
+                  onClick={closeAllOverlays}
                   className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-gray-800 hover:text-blue-400 transition-colors duration-200"
                 >
                   <FaHeart className="text-xl" />
@@ -164,6 +277,7 @@ const Navbars = () => {
                 href="https://discord.gg/2JBnqk2kne"
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={closeAllOverlays}
                 className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-gray-800 hover:text-blue-400 transition-colors duration-200"
               >
                 <FaDiscord className="text-xl" />
@@ -174,7 +288,7 @@ const Navbars = () => {
             <li>
               <Link
                 to="/about"
-                onClick={() => setIsOpen(false)}
+                onClick={closeAllOverlays}
                 className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-gray-800 hover:text-blue-400 transition-colors duration-200"
               >
                 <FaInfoCircle className="text-xl" />
@@ -200,7 +314,7 @@ const Navbars = () => {
                 <li>
                   <Link
                     to="/profile"
-                    onClick={() => setIsOpen(false)}
+                    onClick={closeAllOverlays}
                     className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-gray-800 hover:text-blue-400 transition-colors duration-200"
                   >
                     <FaUser className="text-xl" />
@@ -222,7 +336,7 @@ const Navbars = () => {
                 <li className="border-t border-gray-700 mt-4 pt-4">
                   <Link
                     to="/login"
-                    onClick={() => setIsOpen(false)}
+                    onClick={closeAllOverlays}
                     className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-gray-800 hover:text-blue-400 transition-colors duration-200"
                   >
                     <FaSignInAlt className="text-xl" />
@@ -232,7 +346,7 @@ const Navbars = () => {
                 <li>
                   <Link
                     to="/signup"
-                    onClick={() => setIsOpen(false)}
+                    onClick={closeAllOverlays}
                     className="flex items-center space-x-3 py-3 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200"
                   >
                     <FaUserPlus className="text-xl" />
@@ -245,15 +359,15 @@ const Navbars = () => {
         </nav>
       </header>
 
-      {/* Overlay for mobile */}
+      {/* Overlay for mobile sidebar */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-70 z-30 md:hidden"
-          onClick={() => setIsOpen(false)}
+          onClick={closeAllOverlays}
         />
       )}
     </>
   );
 };
 
-export default Navbars;
+export default Navbar;

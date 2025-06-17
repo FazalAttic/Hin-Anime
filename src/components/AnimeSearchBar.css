@@ -11,9 +11,16 @@
   height: 3rem;
   border: 1px solid white;
   border-radius: 8px;
+  width: 30rem;
 
   transition: all 0.3s ease;
   background-color: #211d1dc4;
+}
+
+@media not all and (min-width: 640px) {
+  .anime-search-bar {
+    width: auto;
+  }
 }
 
 .anime-search-bar.focused {

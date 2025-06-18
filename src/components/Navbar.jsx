@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   FaDiscord,
   FaHome,
-  FaInfoCircle,
   FaBars,
   FaUser,
   FaHeart,
@@ -13,6 +12,7 @@ import {
   FaSearch,
   FaFilter,
   FaTimes,
+  FaBalanceScale,
 } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext.jsx";
 import AnimeSearchBar from "./AnimeSearchBar.jsx";
@@ -291,7 +291,7 @@ const Navbar = () => {
                 onClick={closeAllOverlays}
                 className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-gray-800 hover:text-blue-400 transition-colors duration-200"
               >
-                <FaInfoCircle className="text-xl" />
+                <FaBalanceScale className="text-xl" />
                 <span className="font-medium">DMCA</span>
               </Link>
             </li>

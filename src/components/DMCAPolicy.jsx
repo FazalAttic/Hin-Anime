@@ -123,18 +123,7 @@ const DMCAPolicy = () => {
                     href="mailto:your.email@example.com"
                     className="text-blue-400 hover:text-blue-300 underline"
                   >
-                    📧 your.email@example.com
-                  </a>
-                </p>
-
-                <p>
-                  Or through our contact form:
-                  <br />
-                  <a
-                    href="/contact"
-                    className="text-blue-400 hover:text-blue-300 underline"
-                  >
-                    🔗 Contact Page
+                    📧 hinanime.site@gmail.com
                   </a>
                 </p>
 

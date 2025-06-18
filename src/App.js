@@ -12,10 +12,11 @@ import ForgotPassword from "./pages/ForgotPassword.jsx";
 import AnimePage from "./components/AnimePage.jsx";
 import GenrePage from "./pages/GenrePage.jsx"; // Add this import
 import ScrollToTop from "./components/ScrollToTop";
-import About from "./pages/About.jsx"; // Add if you have an About page
+
 import NotFound from "./pages/NotFound.jsx"; // Recommended for 404 pages
 
 import "./index.css";
+import DMCAPolicy from "./components/DMCAPolicy.jsx";
 
 export default function App() {
   return (
@@ -31,7 +32,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/about" element={<About />} />{" "}
+        <Route path="/dmca" element={<DMCAPolicy />} />{" "}
         {/* Add if you have About */}
         {/* Private Routes */}
         <Route

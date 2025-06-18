@@ -287,12 +287,12 @@ const Navbar = () => {
 
             <li>
               <Link
-                to="/about"
+                to="/dmca"
                 onClick={closeAllOverlays}
                 className="flex items-center space-x-3 py-3 px-4 rounded-lg hover:bg-gray-800 hover:text-blue-400 transition-colors duration-200"
               >
                 <FaInfoCircle className="text-xl" />
-                <span className="font-medium">ABOUT</span>
+                <span className="font-medium">DMCA</span>
               </Link>
             </li>
 

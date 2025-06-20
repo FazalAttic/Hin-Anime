@@ -1,5 +1,6 @@
+// Enhanced MoreLikeThis.jsx with all improvements
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { animeData } from "../data";
 import { AiFillStar, AiOutlineHeart, AiFillHeart } from "react-icons/ai";
@@ -13,26 +14,24 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { createSlug } from "../context/utils";
+import { toast } from "react-hot-toast";
 
 export default function MoreLikeThis({ currentAnimeId }) {
   const { user } = useAuth();
   const [userWishlist, setUserWishlist] = React.useState([]);
   const [hoveredAnime, setHoveredAnime] = React.useState(null);
+  const navigate = useNavigate();
 
-  // Get current anime details
   const currentAnime = animeData.find((anime) => anime.id === currentAnimeId);
 
-  // Calculate similar anime based on genres and rating
   const similarAnime = React.useMemo(() => {
     return animeData
       .filter((anime) => anime.id !== currentAnimeId)
       .map((anime) => {
-        // Calculate genre similarity
         const genreMatch =
           currentAnime?.genres?.filter((genre) => anime.genres?.includes(genre))
             .length || 0;
 
-        // Calculate rating similarity
         const ratingDiff =
           1 /
           (1 +
@@ -49,12 +48,14 @@ export default function MoreLikeThis({ currentAnimeId }) {
       .slice(0, 5);
   }, [currentAnimeId, currentAnime]);
 
-  // Check if anime is in wishlist
   const isInWishlist = (animeId) => userWishlist.includes(animeId);
 
-  // Toggle wishlist status
   const handleWishlistToggle = async (animeId) => {
-    if (!user) return;
+    if (!user) {
+      toast("Please log in to modify your wishlist.");
+      navigate("/login");
+      return;
+    }
 
     try {
       const userRef = doc(db, "users", user.uid);
@@ -74,7 +75,6 @@ export default function MoreLikeThis({ currentAnimeId }) {
     }
   };
 
-  // Load user wishlist
   React.useEffect(() => {
     if (!user) return;
 
@@ -96,7 +96,6 @@ export default function MoreLikeThis({ currentAnimeId }) {
           <h2 className="text-2xl font-bold text-white">More Like This</h2>
         </div>
 
-        {/* Responsive grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {similarAnime.map((anime) => (
             <motion.div
@@ -109,6 +108,7 @@ export default function MoreLikeThis({ currentAnimeId }) {
               <Link to={`/anime/${createSlug(anime.title)}`} className="block">
                 <div className="relative aspect-[2/3] w-full">
                   <img
+                    loading="lazy"
                     className="w-full h-full object-cover rounded-sm"
                     src={anime.imageUrl}
                     alt={anime.title}
@@ -118,13 +118,14 @@ export default function MoreLikeThis({ currentAnimeId }) {
                     }
                   />
 
-                  {/* Rating badge */}
                   <div className="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 flex items-center rounded">
-                    <AiFillStar className="text-yellow-400 mr-1" />
+                    <AiFillStar
+                      className="text-yellow-400 mr-1"
+                      title="Rating"
+                    />
                     {anime.imdbRating || "N/A"}
                   </div>
 
-                  {/* Overlay that appears on hover */}
                   {hoveredAnime === anime.id && (
                     <div className="absolute bottom-0 left-1/2 w-full sm:w-[260px] h-full transform -translate-x-1/2 bg-black/55 backdrop-blur-lg text-white p-4 rounded-lg shadow-xl z-20 hidden sm:block transition-all duration-300 ease-out opacity-0 group-hover:opacity-100">
                       <h3 className="text-lg mb-2">{anime.title}</h3>
@@ -161,14 +162,20 @@ export default function MoreLikeThis({ currentAnimeId }) {
                 </div>
               </Link>
 
-              {/* Title and wishlist button */}
               <div className="mt-2">
                 <h2 className="text-white text-sm font-medium truncate">
                   {anime.title}
                 </h2>
-                <button
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.05 }}
                   onClick={() => handleWishlistToggle(anime.id)}
-                  className={`w-full mt-1 text-xs px-2 py-1 rounded-sm flex items-center justify-center gap-1 ${
+                  title={
+                    isInWishlist(anime.id)
+                      ? "Remove from Wishlist"
+                      : "Add to Wishlist"
+                  }
+                  className={`w-full mt-1 text-xs px-2 py-1 rounded-sm flex items-center justify-center gap-1 transition-all duration-300 ease-in-out ${
                     isInWishlist(anime.id)
                       ? "bg-red-600 text-white"
                       : "bg-gray-700 text-white hover:bg-gray-600"
@@ -183,7 +190,7 @@ export default function MoreLikeThis({ currentAnimeId }) {
                       <AiOutlineHeart /> Add
                     </>
                   )}
-                </button>
+                </motion.button>
               </div>
             </motion.div>
           ))}

@@ -52,6 +52,9 @@ export default function Main({ id }) {
   const [userReaction, setUserReaction] = React.useState(null);
   const videoRef = useRef(null);
 
+  // Timer ref to track if 25 seconds have passed
+  const saveTimeoutRef = useRef(null);
+
   // All useEffect hooks
   // Update the useEffect that listens for user profile changes
   React.useEffect(() => {
@@ -543,24 +546,48 @@ export default function Main({ id }) {
 
   // --- MOVE THESE TWO useEffect HOOKS TO HERE, BEFORE ANY RETURN ---
   useEffect(() => {
-    if (!user) return;
-    const saveProgress = async () => {
-      const userRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userRef);
-      let continueWatching = userSnap.data()?.continueWatching || [];
-      // Remove old entry for this anime
-      continueWatching = continueWatching.filter(
-        (item) => String(item.animeId) !== String(id)
-      );
-      // Add new entry
-      continueWatching.push({
+    if (!id) return;
+
+    // Clear previous timer if any
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+
+    // Start 25s timer
+    saveTimeoutRef.current = setTimeout(() => {
+      const progress = {
         animeId: id,
         episodeIndex: currentEpisodeIndex,
         updatedAt: Date.now(),
-      });
-      await updateDoc(userRef, { continueWatching });
+      };
+
+      if (!user) {
+        // Save to localStorage for guests
+        let local = [];
+        try {
+          local = JSON.parse(localStorage.getItem("continueWatching")) || [];
+        } catch (e) {
+          local = [];
+        }
+        local = local.filter((item) => String(item.animeId) !== String(id));
+        local.push(progress);
+        localStorage.setItem("continueWatching", JSON.stringify(local));
+      } else {
+        // Save to Firestore for logged-in users
+        const saveProgress = async () => {
+          const userRef = doc(db, "users", user.uid);
+          const userSnap = await getDoc(userRef);
+          let remote = userSnap.data()?.continueWatching || [];
+          remote = remote.filter((item) => String(item.animeId) !== String(id));
+          remote.push(progress);
+          await updateDoc(userRef, { continueWatching: remote });
+        };
+        saveProgress();
+      }
+    }, 25000); // 25 seconds
+
+    // Cleanup timer on episode change/unmount
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     };
-    saveProgress();
   }, [currentEpisodeIndex, id, user]);
 
   useEffect(() => {
@@ -575,40 +602,40 @@ export default function Main({ id }) {
     fetchProgress();
   }, [user, id]);
 
-  useEffect(() => {
-    if (!id) return;
+  // useEffect(() => {
+  //   if (!id) return;
 
-    const progress = {
-      animeId: id,
-      episodeIndex: currentEpisodeIndex,
-      updatedAt: Date.now(),
-    };
+  //   const progress = {
+  //     animeId: id,
+  //     episodeIndex: currentEpisodeIndex,
+  //     updatedAt: Date.now(),
+  //   };
 
-    if (!user) {
-      // Save to localStorage for guests
-      let local = [];
-      try {
-        local = JSON.parse(localStorage.getItem("continueWatching")) || [];
-      } catch (e) {
-        local = [];
-      }
-      // Remove old entry for this anime
-      local = local.filter((item) => String(item.animeId) !== String(id));
-      local.push(progress);
-      localStorage.setItem("continueWatching", JSON.stringify(local));
-    } else {
-      // Save to Firestore for logged-in users
-      const saveProgress = async () => {
-        const userRef = doc(db, "users", user.uid);
-        const userSnap = await getDoc(userRef);
-        let remote = userSnap.data()?.continueWatching || [];
-        remote = remote.filter((item) => String(item.animeId) !== String(id));
-        remote.push(progress);
-        await updateDoc(userRef, { continueWatching: remote });
-      };
-      saveProgress();
-    }
-  }, [currentEpisodeIndex, id, user]);
+  //   if (!user) {
+  //     // Save to localStorage for guests
+  //     let local = [];
+  //     try {
+  //       local = JSON.parse(localStorage.getItem("continueWatching")) || [];
+  //     } catch (e) {
+  //       local = [];
+  //     }
+  //     // Remove old entry for this anime
+  //     local = local.filter((item) => String(item.animeId) !== String(id));
+  //     local.push(progress);
+  //     localStorage.setItem("continueWatching", JSON.stringify(local));
+  //   } else {
+  //     // Save to Firestore for logged-in users
+  //     const saveProgress = async () => {
+  //       const userRef = doc(db, "users", user.uid);
+  //       const userSnap = await getDoc(userRef);
+  //       let remote = userSnap.data()?.continueWatching || [];
+  //       remote = remote.filter((item) => String(item.animeId) !== String(id));
+  //       remote.push(progress);
+  //       await updateDoc(userRef, { continueWatching: remote });
+  //     };
+  //     saveProgress();
+  //   }
+  // }, [currentEpisodeIndex, id, user]);
   // --- END OF MOVED HOOKS ---
 
   // Conditional returns after all hooks

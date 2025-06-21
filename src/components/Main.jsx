@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   doc,
@@ -574,6 +574,41 @@ export default function Main({ id }) {
     };
     fetchProgress();
   }, [user, id]);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const progress = {
+      animeId: id,
+      episodeIndex: currentEpisodeIndex,
+      updatedAt: Date.now(),
+    };
+
+    if (!user) {
+      // Save to localStorage for guests
+      let local = [];
+      try {
+        local = JSON.parse(localStorage.getItem("continueWatching")) || [];
+      } catch (e) {
+        local = [];
+      }
+      // Remove old entry for this anime
+      local = local.filter((item) => String(item.animeId) !== String(id));
+      local.push(progress);
+      localStorage.setItem("continueWatching", JSON.stringify(local));
+    } else {
+      // Save to Firestore for logged-in users
+      const saveProgress = async () => {
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+        let remote = userSnap.data()?.continueWatching || [];
+        remote = remote.filter((item) => String(item.animeId) !== String(id));
+        remote.push(progress);
+        await updateDoc(userRef, { continueWatching: remote });
+      };
+      saveProgress();
+    }
+  }, [currentEpisodeIndex, id, user]);
   // --- END OF MOVED HOOKS ---
 
   // Conditional returns after all hooks

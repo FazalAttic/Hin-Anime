@@ -87,11 +87,45 @@ const Home = () => {
   // Fetch continue watching list
   useEffect(() => {
     const fetchContinueWatching = async () => {
-      if (!user) return;
+      let local = [];
+      try {
+        local = JSON.parse(localStorage.getItem("continueWatching")) || [];
+      } catch (e) {
+        local = [];
+      }
+
+      if (!user) {
+        setContinueWatching(local);
+        return;
+      }
+
+      // If user is logged in, fetch from Firestore and merge
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
-      setContinueWatching(userSnap.data()?.continueWatching || []);
+      const remote = userSnap.data()?.continueWatching || [];
+
+      // Merge: keep the latest progress for each anime
+      const mergedMap = new Map();
+      [...local, ...remote].forEach((item) => {
+        const key = String(item.animeId);
+        if (
+          !mergedMap.has(key) ||
+          (item.updatedAt || 0) > (mergedMap.get(key)?.updatedAt || 0)
+        ) {
+          mergedMap.set(key, item);
+        }
+      });
+      const merged = Array.from(mergedMap.values());
+
+      // If there was local progress, update Firestore and clear localStorage
+      if (local.length > 0) {
+        await updateDoc(userRef, { continueWatching: merged });
+        localStorage.removeItem("continueWatching");
+      }
+
+      setContinueWatching(merged);
     };
+
     fetchContinueWatching();
   }, [user]);
 
@@ -160,7 +194,11 @@ const Home = () => {
     <>
       <AnimeSlider />
       <TopRatedAnime animeData={animeData} />
-      <ContinueWatching continueWatching={continueWatching} />
+      <ContinueWatching
+        continueWatching={continueWatching}
+        setContinueWatching={setContinueWatching}
+        user={user}
+      />
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

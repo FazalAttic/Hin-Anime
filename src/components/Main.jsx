@@ -1,4 +1,23 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  doc,
+  updateDoc,
+  getDoc,
+  arrayUnion,
+  arrayRemove,
+  setDoc,
+  collection,
+  addDoc,
+  serverTimestamp,
+  onSnapshot,
+  query,
+  orderBy,
+} from "firebase/firestore";
+import { db } from "../firebase";
+import { useAuth } from "../context/AuthContext";
+import { animeData } from "../data";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   AiFillYoutube,
   AiOutlineClose,
@@ -11,25 +30,6 @@ import {
 import MoreLikeThis from "./MoreLikeThis";
 import { FiEdit2 } from "react-icons/fi";
 import { FaArrowLeft, FaArrowRight, FaReply } from "react-icons/fa";
-import { useAuth } from "../context/AuthContext";
-import { db } from "../firebase";
-import {
-  getDoc,
-  doc,
-  updateDoc,
-  arrayUnion,
-  arrayRemove,
-  collection,
-  addDoc,
-  query,
-  setDoc,
-  orderBy,
-  onSnapshot,
-  serverTimestamp,
-} from "firebase/firestore";
-import { useNavigate } from "react-router-dom";
-import { animeData } from "../data";
-import { motion, AnimatePresence } from "framer-motion";
 
 export default function Main({ id }) {
   // All hooks declared at the top
@@ -50,6 +50,7 @@ export default function Main({ id }) {
   const [animeLikes, setAnimeLikes] = React.useState(0);
   const [animeDislikes, setAnimeDislikes] = React.useState(0);
   const [userReaction, setUserReaction] = React.useState(null);
+  const videoRef = useRef(null);
 
   // All useEffect hooks
   // Update the useEffect that listens for user profile changes
@@ -540,6 +541,41 @@ export default function Main({ id }) {
     return match && match[2].length === 11 ? match[2] : null;
   };
 
+  // --- MOVE THESE TWO useEffect HOOKS TO HERE, BEFORE ANY RETURN ---
+  useEffect(() => {
+    if (!user) return;
+    const saveProgress = async () => {
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+      let continueWatching = userSnap.data()?.continueWatching || [];
+      // Remove old entry for this anime
+      continueWatching = continueWatching.filter(
+        (item) => String(item.animeId) !== String(id)
+      );
+      // Add new entry
+      continueWatching.push({
+        animeId: id,
+        episodeIndex: currentEpisodeIndex,
+        updatedAt: Date.now(),
+      });
+      await updateDoc(userRef, { continueWatching });
+    };
+    saveProgress();
+  }, [currentEpisodeIndex, id, user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchProgress = async () => {
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+      const cw = userSnap.data()?.continueWatching || [];
+      const progress = cw.find((p) => String(p.animeId) === String(id));
+      if (progress) setCurrentEpisodeIndex(progress.episodeIndex || 0);
+    };
+    fetchProgress();
+  }, [user, id]);
+  // --- END OF MOVED HOOKS ---
+
   // Conditional returns after all hooks
   if (!id)
     return <div className="text-center py-20">Anime ID not provided</div>;
@@ -813,6 +849,7 @@ export default function Main({ id }) {
               >
                 {episodes[currentEpisodeIndex]?.url ? (
                   <iframe
+                    ref={videoRef}
                     src={episodes[currentEpisodeIndex].url}
                     className="w-full h-full"
                     allowFullScreen

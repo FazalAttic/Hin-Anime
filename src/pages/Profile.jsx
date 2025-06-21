@@ -11,6 +11,12 @@ import {
   getDocs,
   onSnapshot,
 } from "firebase/firestore";
+import {
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+} from "firebase/auth";
+import { auth } from "../firebase";
 
 import { motion } from "framer-motion";
 import { FiEdit2, FiSave, FiX, FiUpload } from "react-icons/fi";
@@ -30,6 +36,10 @@ const Profile = () => {
   const [usernameError, setUsernameError] = useState("");
   const [usernameAvailable, setUsernameAvailable] = useState(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
   const RESERVED_USERNAMES = [
     // Administrative terms
@@ -565,6 +575,25 @@ const Profile = () => {
     }
   };
 
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setPasswordMessage("");
+    setPasswordLoading(true);
+    try {
+      const userObj = auth.currentUser;
+      const cred = EmailAuthProvider.credential(user.email, currentPassword);
+      await reauthenticateWithCredential(userObj, cred);
+      await updatePassword(userObj, newPassword);
+      setPasswordMessage("✅ Password updated successfully!");
+      setCurrentPassword("");
+      setNewPassword("");
+    } catch (err) {
+      setPasswordMessage("❌ " + (err.message || "Failed to update password."));
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <motion.div
@@ -719,6 +748,46 @@ const Profile = () => {
                       transition-all duration-300"
                   />
                 </motion.div>
+              </div>
+
+              {/* Change Password */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-300">
+                  Change Password
+                </label>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Current password"
+                  className="w-full px-4 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300"
+                />
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="New password"
+                  className="w-full px-4 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300"
+                />
+                <button
+                  type="button"
+                  onClick={handleChangePassword}
+                  disabled={passwordLoading || !currentPassword || !newPassword}
+                  className="mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  {passwordLoading ? "Updating..." : "Update Password"}
+                </button>
+                {passwordMessage && (
+                  <div
+                    className={`mt-2 text-sm ${
+                      passwordMessage.includes("✅")
+                        ? "text-green-400"
+                        : "text-red-400"
+                    }`}
+                  >
+                    {passwordMessage}
+                  </div>
+                )}
               </div>
 
               {/* Buttons */}

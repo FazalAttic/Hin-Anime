@@ -246,9 +246,9 @@ const Login = () => {
             >
               <Link
                 to="/forgot-password"
-                className="text-white/60 hover:text-white transition duration-300"
+                className="text-red-400 hover:underline font-semibold"
               >
-                Forgot password?
+                Forgot Password?
               </Link>
               <span className="mx-2 text-white/30">•</span>
               <Link

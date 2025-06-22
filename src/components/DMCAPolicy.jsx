@@ -120,7 +120,7 @@ const DMCAPolicy = () => {
                   You can submit your request via email to:
                   <br />
                   <a
-                    href="mailto:your.email@example.com"
+                    href="mailto:hinanime.site@gmail.com"
                     className="text-blue-400 hover:text-blue-300 underline"
                   >
                     📧 hinanime.site@gmail.com

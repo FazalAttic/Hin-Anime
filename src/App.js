@@ -22,8 +22,7 @@ export default function App() {
   return (
     <>
       <ScrollToTop />
-      <Navbar />
-
+      <Navbar />z
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/anime/:titleSlug" element={<AnimePage />} />

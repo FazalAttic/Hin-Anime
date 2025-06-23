@@ -1,23 +1,32 @@
 import { useParams } from "react-router-dom";
 import Main from "./Main.jsx";
-import { animeData } from "../data.jsx";
-import { createSlug } from "../context/utils.jsx";
+import { useEffect, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase";
+import { createSlug } from "../context/utils";
 
 export default function AnimePage() {
-  const { titleSlug } = useParams(); // Changed from animeId to titleSlug
+  const { titleSlug } = useParams();
+  const [anime, setAnime] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Find anime by matching the slugified title
-  const anime = animeData.find((item) => {
-    // Create URL-friendly slug from anime title
-    const itemSlug = createSlug(item.title);
+  useEffect(() => {
+    const fetchAnime = async () => {
+      setLoading(true);
+      const querySnap = await getDocs(collection(db, "animeshows"));
+      const foundAnime = querySnap.docs
+        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .find((anime) => createSlug(anime.title) === titleSlug);
 
-    // Also check against animeUrl if needed (backward compatibility)
-    return (
-      itemSlug === titleSlug ||
-      item.animeUrl === `/${titleSlug}` ||
-      item.id.toString() === titleSlug
-    ); // Fallback to ID if needed
-  });
+      setAnime(foundAnime || null);
+      setLoading(false);
+    };
+    fetchAnime();
+  }, [titleSlug]);
+
+  if (loading) {
+    return <div />; // or null for no flash, or a spinner if you want
+  }
 
   if (!anime) {
     return (
@@ -32,5 +41,5 @@ export default function AnimePage() {
     );
   }
 
-  return <Main id={anime.id} />;
+  return <Main anime={anime} />;
 }

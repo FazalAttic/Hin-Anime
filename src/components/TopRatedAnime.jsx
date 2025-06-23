@@ -1,19 +1,31 @@
 // src/components/TopRatedAnime.jsx
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createSlug } from "../context/utils";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase";
 
-const TopRatedAnime = ({ animeData }) => {
+const TopRatedAnime = () => {
   const scrollRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const [allAnime, setAllAnime] = useState([]);
+
+  // Fetch all anime from Firestore
+  useEffect(() => {
+    const fetchAnime = async () => {
+      const querySnap = await getDocs(collection(db, "animeshows"));
+      setAllAnime(querySnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    };
+    fetchAnime();
+  }, []);
 
   // Filter and sort anime by IMDb rating (descending) and take top 10
-  const topRatedAnime = [...animeData]
-    .sort((a, b) => b.imdbRating - a.imdbRating)
+  const topRatedAnime = [...allAnime]
+    .sort((a, b) => (b.imdbRating || 0) - (a.imdbRating || 0))
     .slice(0, 10);
 
   const scroll = (direction) => {

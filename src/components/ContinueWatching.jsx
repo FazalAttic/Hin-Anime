@@ -1,6 +1,7 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { animeData } from "../data";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tooltip } from "react-tooltip";
 
@@ -18,14 +19,21 @@ function formatTimeAgo(timestamp) {
 
 const ContinueWatching = ({ continueWatching, setContinueWatching, user }) => {
   const [removingId, setRemovingId] = useState(null);
+  const [allAnime, setAllAnime] = useState([]);
+
+  // Fetch all anime from Firestore
+  useEffect(() => {
+    const fetchAnime = async () => {
+      const querySnap = await getDocs(collection(db, "animeshows"));
+      setAllAnime(querySnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    };
+    fetchAnime();
+  }, []);
 
   const handleRemove = useCallback(
     async (animeId) => {
       setRemovingId(animeId);
-
-      // Add a small delay to allow the animation to play
       await new Promise((resolve) => setTimeout(resolve, 300));
-
       if (!user) {
         try {
           const local = JSON.parse(
@@ -58,7 +66,6 @@ const ContinueWatching = ({ continueWatching, setContinueWatching, user }) => {
           );
         }
       }
-
       setRemovingId(null);
     },
     [user, setContinueWatching]
@@ -129,7 +136,7 @@ const ContinueWatching = ({ continueWatching, setContinueWatching, user }) => {
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
           <AnimatePresence initial={false}>
             {sorted.map((progress) => {
-              const anime = animeData.find(
+              const anime = allAnime.find(
                 (a) => String(a.id) === String(progress.animeId)
               );
               if (!anime) return null;
@@ -160,7 +167,9 @@ const ContinueWatching = ({ continueWatching, setContinueWatching, user }) => {
                   className="relative flex-none w-44 min-w-[11rem]"
                 >
                   <Link
-                    to={`/anime/${anime.id}`}
+                    to={`/anime/${
+                      anime.title ? createSlug(anime.title) : anime.id
+                    }`}
                     className="group  bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-200 flex flex-col h-full"
                   >
                     <div className="relative">
@@ -243,3 +252,10 @@ const ContinueWatching = ({ continueWatching, setContinueWatching, user }) => {
 };
 
 export default React.memo(ContinueWatching);
+
+function createSlug(title) {
+  return title
+    ?.toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+}

@@ -16,7 +16,6 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "../context/AuthContext";
-import { animeData } from "../data";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   AiFillYoutube,
@@ -31,7 +30,7 @@ import MoreLikeThis from "./MoreLikeThis";
 import { FiEdit2 } from "react-icons/fi";
 import { FaArrowLeft, FaArrowRight, FaReply } from "react-icons/fa";
 
-export default function Main({ id }) {
+export default function Main({ anime }) {
   // All hooks declared at the top
   const { user } = useAuth();
   const [userWishlist, setUserWishlist] = React.useState([]);
@@ -55,7 +54,6 @@ export default function Main({ id }) {
   // Timer ref to track if 25 seconds have passed
   const saveTimeoutRef = useRef(null);
 
-  // All useEffect hooks
   // Update the useEffect that listens for user profile changes
   React.useEffect(() => {
     if (!user) return;
@@ -120,12 +118,12 @@ export default function Main({ id }) {
       if (userSnap.exists()) {
         const wishlist = userSnap.data().wishlist || [];
         setUserWishlist(wishlist);
-        setIsInWishlist(wishlist.includes(id));
+        setIsInWishlist(wishlist.includes(anime.id));
       }
     };
 
     fetchWishlist();
-  }, [user, id]);
+  }, [user, anime.id]);
 
   React.useEffect(() => {
     const checkWishlist = async () => {
@@ -133,16 +131,16 @@ export default function Main({ id }) {
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
       if (userSnap.exists()) {
-        setIsInWishlist(userSnap.data().wishlist?.includes(id));
+        setIsInWishlist(userSnap.data().wishlist?.includes(anime.id));
       }
     };
     checkWishlist();
-  }, [user, id]);
+  }, [user, anime.id]);
 
   React.useEffect(() => {
-    if (!id) return;
+    if (!anime.id) return;
 
-    const animeRef = doc(db, "anime", String(id));
+    const animeRef = doc(db, "anime", String(anime.id));
     const unsubscribeAnime = onSnapshot(animeRef, (doc) => {
       if (doc.exists()) {
         const data = doc.data();
@@ -166,7 +164,7 @@ export default function Main({ id }) {
     });
 
     setLoadingComments(true);
-    const commentsRef = collection(db, "anime", String(id), "comments");
+    const commentsRef = collection(db, "anime", String(anime.id), "comments");
     const q = query(commentsRef, orderBy("timestamp", "desc"));
 
     const unsubscribeComments = onSnapshot(
@@ -220,7 +218,7 @@ export default function Main({ id }) {
       unsubscribeAnime();
       unsubscribeComments();
     };
-  }, [id, user]);
+  }, [anime.id, user]);
   const handleAddToWishlist = async (animeId) => {
     if (!user) return navigate("/login");
 
@@ -306,7 +304,7 @@ export default function Main({ id }) {
     }
 
     try {
-      const animeRef = doc(db, "anime", String(id));
+      const animeRef = doc(db, "anime", String(anime.id));
       const animeSnap = await getDoc(animeRef);
 
       if (!animeSnap.exists()) {
@@ -371,7 +369,13 @@ export default function Main({ id }) {
     }
 
     try {
-      const commentRef = doc(db, "anime", String(id), "comments", commentId);
+      const commentRef = doc(
+        db,
+        "anime",
+        String(anime.id),
+        "comments",
+        commentId
+      );
       const commentSnap = await getDoc(commentRef);
 
       if (commentSnap.exists()) {
@@ -455,7 +459,7 @@ export default function Main({ id }) {
 
     try {
       const profile = await fetchUserProfile(user.uid);
-      const commentsRef = collection(db, "anime", String(id), "comments");
+      const commentsRef = collection(db, "anime", String(anime.id), "comments");
 
       await addDoc(commentsRef, {
         text: replyContent,
@@ -481,14 +485,14 @@ export default function Main({ id }) {
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
-    if (!user || !newComment.trim() || !id) return;
+    if (!user || !newComment.trim() || !anime.id) return;
 
     const submitButton = e.currentTarget.querySelector('button[type="submit"]');
     if (submitButton) submitButton.disabled = true;
 
     try {
       const profile = await fetchUserProfile(user.uid);
-      const commentsRef = collection(db, "anime", String(id), "comments");
+      const commentsRef = collection(db, "anime", String(anime.id), "comments");
 
       await addDoc(commentsRef, {
         text: newComment,
@@ -524,11 +528,11 @@ export default function Main({ id }) {
       const userRef = doc(db, "users", user.uid);
       if (isInWishlist) {
         await updateDoc(userRef, {
-          wishlist: arrayRemove(id),
+          wishlist: arrayRemove(anime.id),
         });
       } else {
         await updateDoc(userRef, {
-          wishlist: arrayUnion(id),
+          wishlist: arrayUnion(anime.id),
         });
       }
       setIsInWishlist(!isInWishlist);
@@ -546,7 +550,7 @@ export default function Main({ id }) {
 
   // --- MOVE THESE TWO useEffect HOOKS TO HERE, BEFORE ANY RETURN ---
   useEffect(() => {
-    if (!id) return;
+    if (!anime.id) return;
 
     // Clear previous timer if any
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
@@ -554,7 +558,7 @@ export default function Main({ id }) {
     // Start 25s timer
     saveTimeoutRef.current = setTimeout(() => {
       const progress = {
-        animeId: id,
+        animeId: anime.id,
         episodeIndex: currentEpisodeIndex,
         updatedAt: Date.now(),
       };
@@ -567,7 +571,9 @@ export default function Main({ id }) {
         } catch (e) {
           local = [];
         }
-        local = local.filter((item) => String(item.animeId) !== String(id));
+        local = local.filter(
+          (item) => String(item.animeId) !== String(anime.id)
+        );
         local.push(progress);
         localStorage.setItem("continueWatching", JSON.stringify(local));
       } else {
@@ -576,7 +582,9 @@ export default function Main({ id }) {
           const userRef = doc(db, "users", user.uid);
           const userSnap = await getDoc(userRef);
           let remote = userSnap.data()?.continueWatching || [];
-          remote = remote.filter((item) => String(item.animeId) !== String(id));
+          remote = remote.filter(
+            (item) => String(item.animeId) !== String(anime.id)
+          );
           remote.push(progress);
           await updateDoc(userRef, { continueWatching: remote });
         };
@@ -588,7 +596,7 @@ export default function Main({ id }) {
     return () => {
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     };
-  }, [currentEpisodeIndex, id, user]);
+  }, [currentEpisodeIndex, anime.id, user]);
 
   useEffect(() => {
     if (!user) return;
@@ -596,11 +604,11 @@ export default function Main({ id }) {
       const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
       const cw = userSnap.data()?.continueWatching || [];
-      const progress = cw.find((p) => String(p.animeId) === String(id));
+      const progress = cw.find((p) => String(p.animeId) === String(anime.id));
       if (progress) setCurrentEpisodeIndex(progress.episodeIndex || 0);
     };
     fetchProgress();
-  }, [user, id]);
+  }, [user, anime.id]);
 
   // useEffect(() => {
   //   if (!id) return;
@@ -639,11 +647,8 @@ export default function Main({ id }) {
   // --- END OF MOVED HOOKS ---
 
   // Conditional returns after all hooks
-  if (!id)
-    return <div className="text-center py-20">Anime ID not provided</div>;
-
-  const anime = animeData.find((item) => String(item.id) === String(id));
-  if (!anime) return <div className="text-center py-20">Anime not found</div>;
+  if (!anime || !anime.id)
+    return <div className="text-center py-20">Anime not found</div>;
 
   const episodes = Array.isArray(anime.episodes) ? anime.episodes : [];
   if (episodes.length === 0) {
@@ -1066,11 +1071,7 @@ export default function Main({ id }) {
               )}
 
               {/* Comments list */}
-              {loadingComments ? (
-                <div className="text-center py-8">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-500"></div>
-                </div>
-              ) : comments.length === 0 ? (
+              {comments.length === 0 ? (
                 <div className="text-center py-8 bg-gray-700/20 rounded-lg">
                   <p className="text-gray-400">
                     No comments yet. Be the first to share your thoughts!
@@ -1450,7 +1451,7 @@ export default function Main({ id }) {
           )}
         </AnimatePresence>
 
-        <MoreLikeThis currentAnimeId={id} />
+        <MoreLikeThis currentAnimeId={anime.id} />
       </div>
     </>
   );

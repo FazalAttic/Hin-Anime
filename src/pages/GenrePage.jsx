@@ -1,6 +1,6 @@
 // pages/GenrePage.jsx
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { db } from "../firebase";
 import {
   doc,
@@ -8,33 +8,38 @@ import {
   updateDoc,
   arrayUnion,
   arrayRemove,
+  collection,
+  getDocs,
 } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
-import { animeData } from "../data";
 import AnimeCard from "../components/AnimeCard.jsx";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+
 const GenrePage = () => {
   const { genre } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [allAnime, setAllAnime] = useState([]);
 
-  // Filter anime by genre (case insensitive)
-  const filteredAnime = animeData.filter(
-    (anime) =>
-      anime.genres?.some((g) => g.toLowerCase() === genre.toLowerCase()) &&
-      !anime.isWishlistExclusive
-  );
+  // Fetch all anime from Firestore
+  useEffect(() => {
+    const fetchAnime = async () => {
+      const querySnap = await getDocs(collection(db, "animeshows"));
+      setAllAnime(querySnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      setLoading(false);
+    };
+    fetchAnime();
+  }, []);
 
+  // Fetch wishlist
   useEffect(() => {
     const fetchWishlist = async () => {
       if (!user) {
-        setLoading(false);
+        setWishlist([]);
         return;
       }
-
       try {
         const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
@@ -43,13 +48,17 @@ const GenrePage = () => {
         }
       } catch (error) {
         console.error("Error fetching wishlist:", error);
-      } finally {
-        setLoading(false);
       }
     };
-
     fetchWishlist();
   }, [user]);
+
+  // Filter anime by genre (case insensitive)
+  const filteredAnime = allAnime.filter(
+    (anime) =>
+      anime.genres?.some((g) => g.toLowerCase() === genre.toLowerCase()) &&
+      !anime.isWishlistExclusive
+  );
 
   const handleWishlistAction = async (id, isAdding) => {
     if (!user) {
@@ -97,7 +106,7 @@ const GenrePage = () => {
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="h-auto w-113 px-4 rounded-xl mt-28"
+          className="main-glass bg-gray-900 border-whitegood backdrop-blur shadow-lg h-auto w-113 px-4 rounded-xl mt-28"
         >
           <h1 className="text-3xl font-bold text-white text-center mb-8 -mt-4 max-sm:-mt-8">
             {genre.charAt(0).toUpperCase() + genre.slice(1)} Anime

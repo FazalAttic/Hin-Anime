@@ -1,16 +1,27 @@
 // src/components/AnimeSearchBar.jsx
 import { useState, useEffect, useRef } from "react";
-import { animeData } from "../data";
 import { Link } from "react-router-dom";
-
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase";
+import { createSlug } from "../context/utils";
 import "./AnimeSearchBar.css";
 
 const AnimeSearchBar = ({ onResultClick }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
   const [isFocused, setIsFocused] = useState(false);
+  const [allAnime, setAllAnime] = useState([]);
   const searchRef = useRef(null);
   const inputRef = useRef(null);
+
+  // Fetch all anime from Firestore once
+  useEffect(() => {
+    const fetchAnime = async () => {
+      const querySnap = await getDocs(collection(db, "animeshows"));
+      setAllAnime(querySnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    };
+    fetchAnime();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -30,9 +41,9 @@ const AnimeSearchBar = ({ onResultClick }) => {
 
     const searchWords = searchTerm.toLowerCase().split(/\s+/).filter(Boolean);
 
-    const filtered = animeData
+    const filtered = allAnime
       .map((anime) => {
-        const title = anime.title.toLowerCase();
+        const title = anime.title?.toLowerCase() || "";
         const year = anime.animeyear?.toString() || "";
         const duration = anime.animeduration?.toString() || "";
         let score = 0;
@@ -57,7 +68,7 @@ const AnimeSearchBar = ({ onResultClick }) => {
             score += 15;
           }
 
-          // Duration match (e.g., searching "24" could match 24m episodes)
+          // Duration match
           if (duration.includes(word)) {
             score += 5;
           }
@@ -70,13 +81,13 @@ const AnimeSearchBar = ({ onResultClick }) => {
       .slice(0, 5);
 
     setResults(filtered);
-  }, [searchTerm]);
+  }, [searchTerm, allAnime]);
 
   const handleKeyDown = (e) => {
     if (e.key === "Escape") {
       setIsFocused(false);
     } else if (e.key === "Enter" && results.length > 0) {
-      window.location.href = results[0].animeUrl || "#";
+      window.location.href = `/anime/${createSlug(results[0].title)}`;
     }
   };
 
@@ -113,7 +124,7 @@ const AnimeSearchBar = ({ onResultClick }) => {
           {results.map((anime) => (
             <Link
               key={anime.id}
-              to={`/anime/${anime.id}`}
+              to={`/anime/${createSlug(anime.title)}`}
               className="search-result-item"
               role="option"
               aria-selected="false"
@@ -136,7 +147,6 @@ const AnimeSearchBar = ({ onResultClick }) => {
                 <div className="meta-info">
                   <span>{anime.animeyear || "2024"}</span>
                   <span>•</span>
-
                   <span>{formatDuration(anime.animeduration)}</span>
                 </div>
                 <div className="genres">

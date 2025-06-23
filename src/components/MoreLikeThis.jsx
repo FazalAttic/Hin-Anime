@@ -1,9 +1,7 @@
 // Enhanced MoreLikeThis.jsx with all improvements
-import React from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { animeData } from "../data";
-import { AiFillStar, AiOutlineHeart, AiFillHeart } from "react-icons/ai";
 import { useAuth } from "../context/AuthContext";
 import { db } from "../firebase";
 import {
@@ -12,20 +10,43 @@ import {
   arrayUnion,
   arrayRemove,
   getDoc,
+  collection,
+  getDocs,
 } from "firebase/firestore";
-import { createSlug } from "../context/utils";
+import { AiFillStar, AiOutlineHeart, AiFillHeart } from "react-icons/ai";
 import { toast } from "react-hot-toast";
+
+function createSlug(title) {
+  return title
+    ?.toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+}
 
 export default function MoreLikeThis({ currentAnimeId }) {
   const { user } = useAuth();
   const [userWishlist, setUserWishlist] = React.useState([]);
   const [hoveredAnime, setHoveredAnime] = React.useState(null);
+  const [allAnime, setAllAnime] = useState([]);
+
   const navigate = useNavigate();
 
-  const currentAnime = animeData.find((anime) => anime.id === currentAnimeId);
+  // Fetch all anime from Firestore
+  useEffect(() => {
+    const fetchAnime = async () => {
+      const querySnap = await getDocs(collection(db, "animeshows"));
+      setAllAnime(querySnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    };
+    fetchAnime();
+  }, []);
 
-  const similarAnime = React.useMemo(() => {
-    return animeData
+  const currentAnime = allAnime.find(
+    (anime) => String(anime.id) === String(currentAnimeId)
+  );
+
+  const similarAnime = useMemo(() => {
+    if (!currentAnime) return [];
+    return allAnime
       .filter((anime) => anime.id !== currentAnimeId)
       .map((anime) => {
         const genreMatch =
@@ -46,7 +67,7 @@ export default function MoreLikeThis({ currentAnimeId }) {
       })
       .sort((a, b) => b.similarityScore - a.similarityScore)
       .slice(0, 5);
-  }, [currentAnimeId, currentAnime]);
+  }, [allAnime, currentAnimeId, currentAnime]);
 
   const isInWishlist = (animeId) => userWishlist.includes(animeId);
 
@@ -75,7 +96,7 @@ export default function MoreLikeThis({ currentAnimeId }) {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!user) return;
 
     const fetchWishlist = async () => {
@@ -88,6 +109,8 @@ export default function MoreLikeThis({ currentAnimeId }) {
 
     fetchWishlist();
   }, [user]);
+
+  if (!currentAnime) return null;
 
   return (
     <div className="mt-16 px-4 lg:ml-60">

@@ -6,10 +6,11 @@ import {
   updateDoc,
   arrayUnion,
   arrayRemove,
+  collection,
+  getDocs,
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "../context/AuthContext";
-import { animeData } from "../data";
 import AnimeCard from "../components/AnimeCard.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -24,10 +25,21 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [visibleItems, setVisibleItems] = useState([]);
   const [continueWatching, setContinueWatching] = useState([]);
+  const [allAnime, setAllAnime] = useState([]);
   const animeRefs = useRef([]);
 
+  // Fetch all anime from Firestore
+  useEffect(() => {
+    const fetchAnime = async () => {
+      const querySnap = await getDocs(collection(db, "animeshows"));
+      setAllAnime(querySnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      setLoading(false);
+    };
+    fetchAnime();
+  }, []);
+
   // Filter out wishlist-exclusive anime from home page
-  const animeItems = animeData.filter((anime) => !anime.isWishlistExclusive);
+  const animeItems = allAnime.filter((anime) => !anime.isWishlistExclusive);
 
   // Initialize refs
   useEffect(() => {
@@ -193,7 +205,7 @@ const Home = () => {
   return (
     <>
       <AnimeSlider />
-      <TopRatedAnime animeData={animeData} />
+      <TopRatedAnime />
       <ContinueWatching
         continueWatching={continueWatching}
         setContinueWatching={setContinueWatching}
@@ -241,9 +253,8 @@ const Home = () => {
                   >
                     <AnimeCard
                       anime={anime}
-                      onAdd={() => handleWishlistAction(anime.id, true)}
-                      onRemove={() => handleWishlistAction(anime.id, false)}
                       isInWishlist={wishlist.includes(anime.id)}
+                      // ...other props
                     />
                   </motion.div>
                 ))}

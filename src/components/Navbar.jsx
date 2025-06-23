@@ -17,8 +17,7 @@ import {
 import { useAuth } from "../context/AuthContext.jsx";
 import AnimeSearchBar from "./AnimeSearchBar.jsx";
 import { db } from "../firebase.jsx";
-import { doc, onSnapshot } from "firebase/firestore";
-import { animeData } from "../data.jsx";
+import { doc, onSnapshot, collection, getDocs } from "firebase/firestore";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,11 +26,21 @@ const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState({});
+  const [allGenres, setAllGenres] = useState([]);
 
-  // Extract all unique genres from anime data
-  const allGenres = [
-    ...new Set(animeData.flatMap((anime) => anime.genres || [])),
-  ].sort();
+  // Fetch all genres from Firestore anime data
+  useEffect(() => {
+    const fetchGenres = async () => {
+      const querySnap = await getDocs(collection(db, "animeshows"));
+      const animeList = querySnap.docs.map((doc) => doc.data());
+      const genresSet = new Set();
+      animeList.forEach((anime) => {
+        (anime.genres || []).forEach((genre) => genresSet.add(genre));
+      });
+      setAllGenres([...genresSet].sort());
+    };
+    fetchGenres();
+  }, []);
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -139,7 +148,6 @@ const Navbar = () => {
           >
             <FaBars size={24} />
           </button>
-          {/* Add more left icons here if needed */}
         </div>
 
         {/* Centered Title */}
@@ -170,7 +178,6 @@ const Navbar = () => {
           >
             <FaSearch size={22} />
           </button>
-          {/* Add more right icons here if needed */}
         </div>
       </div>
 

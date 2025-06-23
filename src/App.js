@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound.jsx"; // Recommended for 404 pages
 
 import "./index.css";
 import DMCAPolicy from "./components/DMCAPolicy.jsx";
+import Uploaddata from "./pages/Uploaddata.js";
 
 export default function App() {
   return (
@@ -50,6 +51,7 @@ export default function App() {
             </PrivateRoute>
           }
         />
+        <Route path="/uploaddata" element={<Uploaddata />} />
         {/* 404 Page */}
         <Route path="*" element={<NotFound />} />
       </Routes>

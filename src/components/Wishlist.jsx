@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
 import { db } from "../firebase";
-import { doc, getDoc, updateDoc, arrayRemove } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  arrayRemove,
+  collection,
+  getDocs,
+} from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
-import { animeData } from "../data";
 import AnimeCard from "../components/AnimeCard";
 import { FaHeartBroken, FaRegSadTear } from "react-icons/fa";
 import SkeletonLoader from "../components/SkeletonLoader";
@@ -12,7 +18,25 @@ const Wishlist = () => {
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [allAnime, setAllAnime] = useState([]);
 
+  // Fetch all anime from Firestore
+  useEffect(() => {
+    const fetchAnime = async () => {
+      try {
+        const querySnap = await getDocs(collection(db, "animeshows"));
+        setAllAnime(
+          querySnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+        );
+      } catch (err) {
+        console.error("Failed to fetch anime data:", err);
+        setError("Failed to load anime data. Please try again later.");
+      }
+    };
+    fetchAnime();
+  }, []);
+
+  // Fetch user's wishlist
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
@@ -49,9 +73,7 @@ const Wishlist = () => {
     }
   };
 
-  const filteredAnime = animeData.filter((anime) =>
-    wishlist.includes(anime.id)
-  );
+  const filteredAnime = allAnime.filter((anime) => wishlist.includes(anime.id));
 
   if (loading) {
     return (

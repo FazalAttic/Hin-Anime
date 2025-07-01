@@ -690,7 +690,7 @@ export default function Main({ anime }) {
                 initial={{ scale: 0.95, y: 20 }}
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.95, y: 20 }}
-                className="relative z-10 w-full max-w-md rounded-xl overflow-hidden shadow-2xl"
+                className="relative z-10 w-full max-w-md rounded-xl overflo w-hidden shadow-2xl"
                 style={{
                   background: `linear-gradient(to bottom, ${
                     profilePopup.gradientColorTop || "#2d3748"
@@ -698,12 +698,12 @@ export default function Main({ anime }) {
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="h-40 bg-gradient-to-r from-purple-900 to-blue-800">
+                <div className="h-40 bg-gradient-to-r from-purple-900 to-blue-800 rounded-t-xl">
                   {profilePopup.bannerURL && (
                     <img
                       src={profilePopup.bannerURL}
                       alt="Banner"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover rounded-t-xl"
                     />
                   )}
                 </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { RiGuideLine } from "react-icons/ri";
 import {
   FaDiscord,
   FaHome,
@@ -359,6 +360,20 @@ const Navbar = () => {
                     <FaUserPlus className="text-xl" />
                     <span className="font-medium">SIGN UP</span>
                   </Link>
+                </li>
+                <li className="mt-4">
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem("seenTour");
+                      window.location.reload();
+                    }}
+                    className="flex items-center gap-3 w-full px-4 py-3 rounded-lg transition-all duration-200
+               bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-amber-400/40
+               text-amber-300 hover:text-amber-200 group"
+                  >
+                    <RiGuideLine className="text-lg text-amber-400 group-hover:scale-110 transition-transform" />
+                    <span className="font-medium">Restart Guide</span>
+                  </button>
                 </li>
               </>
             )}

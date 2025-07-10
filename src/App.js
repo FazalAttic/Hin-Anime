@@ -15,12 +15,15 @@ import ScrollToTop from "./components/ScrollToTop";
 import NotFound from "./pages/NotFound.jsx"; // Recommended for 404 pages
 import "./index.css";
 import DMCAPolicy from "./components/DMCAPolicy.jsx";
+import TourGuide from "./components/TourGuide";
 
 export default function App() {
   return (
     <>
       <ScrollToTop />
-      <Navbar />z
+      <Navbar />
+      <TourGuide />
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/anime/:titleSlug" element={<AnimePage />} />

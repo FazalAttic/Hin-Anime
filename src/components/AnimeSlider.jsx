@@ -1,22 +1,25 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
-
+import { Link } from "react-router-dom";
 const AnimeSlider = () => {
   const slides = [
     {
       id: 1,
-      title: "Attack on Titan: Final Season",
-      image: "https://images8.alphacoders.com/108/thumb-1920-1081458.jpg",
+      title: "Demon Slayer: Kimetsu no Yaiba",
+      image: "https://cdn.mos.cms.futurecdn.net/cWVHScpDxYjdYZg8u96sdW.jpg",
       description:
-        "The war for Paradis zeroes in on Shiganshina just as Jaegerists have seized control.",
+        "After his family is slaughtered by demons and his sister is turned into one, Tanjiro Kamado joins the Demon Slayer Corps to avenge his family and find a cure for his sister Nezuko.",
+      watchUrl: "/anime/demon-slayer-season-4",
     },
+
     {
       id: 2,
       title: "Kaiju No. 8",
       image: "https://4kwallpapers.com/images/walls/thumbs_3t/21155.jpg",
       description:
         "Kafka Hibino aspires to join the Defense Force to fight kaiju after a childhood promise.",
+      watchUrl: "/anime/kaiju-no-8-season-1",
     },
     {
       id: 3,
@@ -24,6 +27,7 @@ const AnimeSlider = () => {
       image: "https://images3.alphacoders.com/137/thumb-1920-1371543.jpeg",
       description:
         "Yuji Itadori swallows a cursed talisman and becomes host to a powerful curse.",
+      watchUrl: "/anime/jujutsu-kaisen-season-1",
     },
     {
       id: 4,
@@ -31,6 +35,7 @@ const AnimeSlider = () => {
       image: "https://images3.alphacoders.com/131/thumb-1920-1319293.jpeg",
       description:
         "Denji becomes Chainsaw Man after merging with his pet devil Pochita.",
+      watchUrl: "/anime/chainsaw-man-season-1",
     },
   ];
 
@@ -183,9 +188,12 @@ const AnimeSlider = () => {
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.7 }}
               >
-                <button className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-400">
+                <Link
+                  to={slides[currentSlide].watchUrl}
+                  className="inline-block px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                >
                   Watch Now
-                </button>
+                </Link>
               </motion.div>
             </div>
           </motion.div>

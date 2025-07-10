@@ -254,7 +254,8 @@ const Home = () => {
                     <AnimeCard
                       anime={anime}
                       isInWishlist={wishlist.includes(anime.id)}
-                      // ...other props
+                      onAdd={(id) => handleWishlistAction(id, true)}
+                      onRemove={(id) => handleWishlistAction(id, false)}
                     />
                   </motion.div>
                 ))}

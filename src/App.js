@@ -12,9 +12,7 @@ import ForgotPassword from "./pages/ForgotPassword.jsx";
 import AnimePage from "./components/AnimePage.jsx";
 import GenrePage from "./pages/GenrePage.jsx"; // Add this import
 import ScrollToTop from "./components/ScrollToTop";
-
 import NotFound from "./pages/NotFound.jsx"; // Recommended for 404 pages
-
 import "./index.css";
 import DMCAPolicy from "./components/DMCAPolicy.jsx";
 

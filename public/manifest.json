@@ -1,0 +1,21 @@
+{
+  "short_name": "HinAnime",
+  "name": "Hin-Anime",
+  "icons": [
+    {
+      "src": "hinanime-logo.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "hinanime-logo.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#ff1493",
+  "background_color": "#0f0f1a",
+  "description": "Hin-Anime"
+}
